@@ -4,6 +4,7 @@ import json, os
 import akasha.eval as eval
 import traceback, re
 from typing import Union
+import time
 
 EVAL_MODEL = "openai:gpt-4o"
 
@@ -24,7 +25,7 @@ def extract_json(s: str) -> Union[tuple[Union[dict, None], int]]:
     ss = s.replace("`", "").replace("json", "")
 
     if match is None:
-        return None
+        return None, 0
 
     s = match.group()
     for i, c in enumerate(s):
@@ -134,10 +135,17 @@ def eval_format(model: str, prompt_format_type: str):
     for k in keys:
         score = 0.0
         prompt = "Keys:" + ",".join(k) + "\n\n" + "Article: " + article
-        input_text = akasha.prompts.format_sys_prompt(system_prompt, prompt,
-                                                      prompt_format_type)
-        response = akasha.call_model(model_obj, input_text)
-        response_dict, count = extract_json(response)
+        try:
+            input_text = akasha.prompts.format_sys_prompt(
+                system_prompt, prompt, prompt_format_type)
+            response = akasha.call_model(model_obj, input_text)
+            response_dict, count = extract_json(response)
+        except:
+            responses.append(response)
+            response_dicts.append(None)
+            counts.append(0)
+            scores.append(0.0)
+            continue
         responses.append(response)
         response_dicts.append(response_dict)
         counts.append(count)
@@ -152,6 +160,8 @@ def eval_format(model: str, prompt_format_type: str):
             else_score = 0.5 / (len(ans[keys.index(k)]) * 2)
             for key, value in ans[keys.index(k)].items():
                 if key in response_dict:
+                    if key is None or response_dict[key] is None:
+                        continue
                     score += else_score
                     if type(value) == int:
                         if int(response_dict[key]) == value:
@@ -231,7 +241,7 @@ def total_eval(model: str,
     threshold = 0.0
     max_doc_len = 1500
     search_type = "auto"
-
+    start_time = time.time()
     #### load the json file if exists ###
     output_file_path = f"scores/{model_formal_name}-{prompt_format_type}-{doc_path}.json"
     if os.path.exists(output_file_path):
@@ -327,7 +337,7 @@ def total_eval(model: str,
             "counts": counts,
             "avg_score": sum(scores) / len(scores)
         }
-
+    eval_json["total_time"] = time.time() - start_time
     ## save the json file
     with open(output_file_path, "w", encoding="utf-8") as f:
         json.dump(eval_json, f, ensure_ascii=False, indent=4)
@@ -339,11 +349,11 @@ doc_path = "MIC電子商務"
 
 model = "remote:http://140.92.60.189:8601"  #openai:gpt-3.5-turbo
 #formal_name = model.split(':')[-1].replace('-', '').replace('.', '')
-# model = "openai:gpt-3.5-turbo"  #qwen2_72b  llama31_70b  gemma2_27b
-formal_name = "mistral03_7b"
-total_eval(model, doc_path, formal_name, "gpt", True, True, True, True, True)
-total_eval(model, doc_path, formal_name, "chat_mistral", True, True, True,
-           True, True)
+# model = "openai:gpt-3.5-turbo"  #qwen2_72b  llama31_70b  gemma2_27b  mistral03_7b  breeze10_7b gemma2_2b   gemma2_9b
+formal_name = "taidellama3_8b"
+#total_eval(model, doc_path, formal_name, "gpt", True, True, True, True, True)
+total_eval(model, doc_path, formal_name, "chat_gpt", True, True, True, True,
+           True)
 
 # model = "openai:gpt-4o"  remote:http://35.189.188.83:8503
 # formal_name = model.split(':')[-1].replace('-', '').replace('.', '')
