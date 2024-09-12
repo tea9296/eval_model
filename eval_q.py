@@ -182,10 +182,11 @@ def eval_format(model: str, prompt_format_type: str):
 def eval_qq(model: str,
             qt: str,
             qs: str,
+            formal_name: str,
             doc_path: str = "MIC電子商務40",
             prompt_format_type: str = "chat_gpt"):
 
-    model_name = model.split(':')[-1].replace('-', '')
+    #model_name = model.split(':')[-1].replace('-', '')
     ev = eval.Model_Eval(model=model,
                          question_type=qt,
                          question_style=qs,
@@ -202,9 +203,10 @@ def eval_qq(model: str,
     print(ev.logs[ev.timestamp_list[-1]], "\n\n")
 
     # Save logs to a JSON file
-    with open(f"logs/{model_name}-{doc_path}-{qt}-{qs}.json",
-              "w",
-              encoding="utf-8") as f:
+    with open(
+            f"logs/{formal_name}-{prompt_format_type}-{doc_path}-{qt}-{qs}.json",
+            "w",
+            encoding="utf-8") as f:
         json.dump(ev.logs[ev.timestamp_list[-1]],
                   f,
                   ensure_ascii=False,
@@ -216,7 +218,7 @@ def eval_qq(model: str,
 
 def total_eval(model: str,
                doc_path: str,
-               model_formal_name: str = "gpt-4o",
+               model_formal_name: str = "gpt4o",
                prompt_format_type="chat_gpt",
                fact: bool = True,
                irre: bool = True,
@@ -248,6 +250,7 @@ def total_eval(model: str,
     if fact:
         ttime, doc_length, doc_tokens, score = eval_qq(model, "fact",
                                                        "single_choice",
+                                                       model_formal_name,
                                                        doc_path,
                                                        prompt_format_type)
         avg_score = score["correct_count"] / 40
@@ -262,6 +265,7 @@ def total_eval(model: str,
     if irre:
         ttime, doc_length, doc_tokens, score = eval_qq(model, "irrelevant",
                                                        "single_choice",
+                                                       model_formal_name,
                                                        doc_path,
                                                        prompt_format_type)
         avg_score = score["correct_count"] / 40
@@ -275,7 +279,9 @@ def total_eval(model: str,
 
     if summ:
         ttime, doc_length, doc_tokens, score = eval_qq(model, "summary",
-                                                       "essay", doc_path,
+                                                       "essay",
+                                                       model_formal_name,
+                                                       doc_path,
                                                        prompt_format_type)
         n = len(score["bert"])
         avg_score = {
@@ -293,7 +299,9 @@ def total_eval(model: str,
 
     if comp:
         ttime, doc_length, doc_tokens, score = eval_qq(model, "compared",
-                                                       "essay", doc_path,
+                                                       "essay",
+                                                       model_formal_name,
+                                                       doc_path,
                                                        prompt_format_type)
         n = len(score["bert"])
         avg_score = {
@@ -329,14 +337,16 @@ def total_eval(model: str,
 
 doc_path = "MIC電子商務"
 
-model = "openai:gpt-3.5-turbo"  #openai:gpt-3.5-turbo
-formal_name = model.split(':')[-1].replace('-', '').replace('.', '')
+model = "remote:http://140.92.60.189:8601"  #openai:gpt-3.5-turbo
+#formal_name = model.split(':')[-1].replace('-', '').replace('.', '')
+# model = "openai:gpt-3.5-turbo"  #qwen2_72b  llama31_70b  gemma2_27b
+formal_name = "mistral03_7b"
 total_eval(model, doc_path, formal_name, "gpt", True, True, True, True, True)
-total_eval(model, doc_path, formal_name, "chat_gpt", True, True, True, True,
-           True)
+total_eval(model, doc_path, formal_name, "chat_mistral", True, True, True,
+           True, True)
 
-model = "openai:gpt-4o"
-formal_name = model.split(':')[-1].replace('-', '').replace('.', '')
-total_eval(model, doc_path, formal_name, "gpt", True, True, True, True, True)
-total_eval(model, doc_path, formal_name, "chat_gpt", True, True, True, True,
-           True)
+# model = "openai:gpt-4o"  remote:http://35.189.188.83:8503
+# formal_name = model.split(':')[-1].replace('-', '').replace('.', '')
+# total_eval(model, doc_path, formal_name, "gpt", True, True, True, True, True)
+# total_eval(model, doc_path, formal_name, "chat_gpt", True, True, True, True,
+#            True)
