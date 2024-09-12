@@ -193,7 +193,7 @@ def eval_qq(model: str,
             qt: str,
             qs: str,
             formal_name: str,
-            doc_path: str = "MIC電子商務40",
+            doc_path: str = "MIC電子商務",
             prompt_format_type: str = "chat_gpt"):
 
     #model_name = model.split(':')[-1].replace('-', '')
@@ -349,14 +349,11 @@ doc_path = "MIC電子商務"
 
 model = "remote:http://140.92.60.189:8601"  #openai:gpt-3.5-turbo
 #formal_name = model.split(':')[-1].replace('-', '').replace('.', '')
-# model = "openai:gpt-3.5-turbo"  #qwen2_72b  llama31_70b  gemma2_27b  mistral03_7b  breeze10_7b gemma2_2b   gemma2_9b
-formal_name = "taidellama3_8b"
-#total_eval(model, doc_path, formal_name, "gpt", True, True, True, True, True)
-total_eval(model, doc_path, formal_name, "chat_gpt", True, True, True, True,
-           True)
-
-# model = "openai:gpt-4o"  remote:http://35.189.188.83:8503
-# formal_name = model.split(':')[-1].replace('-', '').replace('.', '')
+#model = "openai:gpt-3.5-turbo"  #qwen2_72b  llama31_70b  gemma2_27b  mistral03_7b  breeze10_7b gemma2_2b   gemma2_9b
+formal_name = "qwen2_72b"
 # total_eval(model, doc_path, formal_name, "gpt", True, True, True, True, True)
 # total_eval(model, doc_path, formal_name, "chat_gpt", True, True, True, True,
 #            True)
+
+total_eval(model, doc_path, formal_name, "gpt", False, False, False, False,
+           True)
